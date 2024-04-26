@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+</head>
+<body>
+
+    <button id="record">Record</button>
+    <button id="stop">Stop</button>
+
+    <div id="output">Output</div>
+    
+
+    <script>
+        let threadId = null;
+        
+        // onload
+        window.onload = function() {
+            fetch('http://localhost:3000/thread')
+                .then(response => response.json())
+                .then(data => {
+                    threadId = data.threadId;
+                });
+        }
+
+
+        // Set up
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+        const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+
+        const recognition = new SpeechRecognition();
+        const speechRecognitionList = new SpeechGrammarList();
+
+        recognition.grammars = speechRecognitionList;
+        recognition.continuous = true;
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+
+        // Start recording
+        document.getElementById('record').onclick = function() {
+            recognition.start();
+        }
+
+        // Stop recording
+        document.getElementById('stop').onclick = function() {
+            recognition.stop();
+            console.log('Stopped recording.');
+        }
+
+        // Output
+        recognition.onresult = async function(event) {
+            // Get the latest transcript 
+            const lastItem = event.results[event.results.length - 1]
+            const transcript = lastItem[0].transcript;
+
+            const newText = "<p>" + transcript + "</p>";
+            document.getElementById('output').insertAdjacentHTML("afterbegin", newText);
+
+            recognition.stop();
+            await sendMessage(transcript);
+        }
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+        }
+
+        // SpeechSynthesis
+        let synthesis = null
+        if ('speechSynthesis' in window) {
+            synthesis = window.speechSynthesis;
+        } else {
+             console.log('Text-to-speech not supported.');
+        }
+
+        async function sendMessage(message) {
+            const response = await fetch('http://localhost:3000/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message, threadId })
+            });
+
+            const data = await response.json();
+
+            const newText = "<p>" + data.message + "</p>";
+            document.getElementById('output').insertAdjacentHTML("afterbegin", newText);
+
+            speak(data.message);
+        }
+
+        function speak(message) {
+            if (synthesis) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                synthesis.speak(utterance);
+            }
+        }
+
+
+
+    </script>
+
+<style>
+body {
+    margin: 50px auto;
+    width: 500px;
+}
+
+#output {
+    margin-top: 20px;
+    border: 1px solid #000;
+    padding: 10px;
+    height: 200px;
+    overflow-y: scroll;
+}
+
+#output p:nth-child(even) {
+    background-color: #f8f6b1;
+}
+</style>
+</body>
+</html>

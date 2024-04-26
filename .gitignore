@@ -1,0 +1,5 @@
+.env
+
+# node_modules on a folder
+/node_modules
+/backend/node_modules
