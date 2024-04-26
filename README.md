@@ -5,7 +5,7 @@ A voice assistant demo using OpenAI assistant.
 - AI assistant: OpenAI AI assistant
 - Voice Output: [OpenAI Text to Speech](https://platform.openai.com/docs/guides/text-to-speech)
 
-Blog post explanation: [Build an AI Voice assistant like Siri using OpenAI](build-ai-voice-assistant-like-siri-use-openai-ai-assistant)
+Blog post explanation: [Build an AI Voice assistant like Siri using OpenAI](https://serpapi.com/blog/build-ai-voice-assistant-like-siri-use-openai-ai-assistant/)
 
 ## Alternatives
 - For voice input we can use speech-to-text API from OpenAI, AssemblyAI, or OtterAI
